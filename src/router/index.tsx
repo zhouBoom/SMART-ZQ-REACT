@@ -9,8 +9,8 @@ import PrivateRoute from "./PrivateRoute";
 const AppRouter: React.FC = () => (
     <BrowserRouter>
         <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
+            <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+            <Route path="/chat" element={<Chat />} />
             <Route path="/login" element={<Login />} />
             <Route path="*" element={<NotFound />} />
         </Routes>

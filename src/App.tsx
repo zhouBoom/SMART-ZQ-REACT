@@ -1,8 +1,8 @@
-import AppRouter from './router'
+import MainLayout from "./layouts/MainLayout";
 
 function App() {
   return (
-    <AppRouter />
+    <MainLayout />
   )
 }
 

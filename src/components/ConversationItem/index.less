@@ -1,0 +1,23 @@
+.conversation-item-container {
+    display: flex;
+    padding: 12px;
+    align-items: center;
+    &:hover {
+        background: #f4f4f4; // 鼠标悬停时的颜色
+    }
+    &:hover::after {
+        content: "★";
+        color: gold;
+        margin-right: 4px;
+    }
+    .content {
+        font-size: 12px;
+        color: #d3d3d3;
+        margin-left: 12px;
+        .title {
+            font-size: 16px;
+            color: #000;
+            font-weight: bold;
+        }
+    }
+}

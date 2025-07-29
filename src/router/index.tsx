@@ -1,20 +1,15 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Chat from "../pages/Chat";
-import Home from "../pages/Home";
-import Login from "../pages/Login";
 import NotFound from "../pages/NotFound";
-import PrivateRoute from "./PrivateRoute";
+import { routes } from "./routes";
 
 const AppRouter: React.FC = () => (
-    <BrowserRouter>
-        <Routes>
-            <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
-            <Route path="/chat" element={<Chat />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="*" element={<NotFound />} />
-        </Routes>
-    </BrowserRouter>
+    <Routes>
+        {routes.map(route => (
+            <Route key={route.path} path={route.path} element={route.element} />
+        ))}
+        <Route path="*" element={<NotFound />} />
+    </Routes>
 ) 
 
 export default AppRouter;

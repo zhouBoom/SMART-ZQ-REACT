@@ -27,8 +27,7 @@ service.interceptors.request.use((config: any) => {
     // 设置默认请求头
     config.headers!['X-Requested-With'] = 'XMLHttpRequest'
     // 从Redux store获取用户数据
-    const state = store.getState() as RootState;
-    console.log('state', state);
+    // const state = store.getState() as RootState;
     // 递归遍历config.data，判断是否包含不安全的链接
     const checkLinks = (data: any) => {
         if (typeof data === 'object' && data !== null) {

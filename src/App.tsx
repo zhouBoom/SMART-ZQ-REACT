@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserInfo } from "@/store/modules/userSlice";
 import type { RootState } from "@/store/index";
+import { fetchConversationList } from "@/store/modules/conversationSlice";
+import { initWebSocket } from "@/util/wsChannel/index";
 
 function App() {
   const setCookie = () => {
@@ -17,15 +19,32 @@ function App() {
   useEffect(() => {
     dispatch(fetchUserInfo() as any);
   }, []);
-  const { data, status, error } = useSelector((state: RootState) => state.user);
-  console.log('data', data);
-  console.log('status', status);
-  console.log('error', error);
+  const { data: userData, status: userStatus} = useSelector((state: RootState) => state.user);
+  const { data: convData, status: convStatus} = useSelector((state: RootState) => state.conversation);
+  console.log('data', userData);
+  console.log('status', userStatus);
+  // 初始化获取会话列表
+  const initConvList = () => {
+    dispatch(fetchConversationList({
+      page: 1,
+      pageSize: 10
+    }) as any);
+    console.log('initConvList', convData?.list, convStatus);
+  }
   // 监听data和status变化
   useEffect(() => {
-    // 初始化socket连接
-    // 如果status为success并且data不为空，则初始化socket连接或者重新初始化
-  }, [data, status]);
+    // 初始化socket连接 如果status为success并且data不为空，则初始化socket连接或者重新初始化
+    console.log('data', userData);
+    if (userStatus === 'success' && userData && userData.corp_list.length > 0) {
+      initConvList();
+      initWebSocket(
+        { 'WX-CORPID': userData.corp_list[0].wx_corp_id },
+        ['test-udc.100tal.com', '127.0.0.1', '10.29', 'localhost'].some(
+          (url) => location.href.includes(url)
+        )
+      );
+    }
+  }, [userData, userStatus]);
 
   return (
     <MainLayout />

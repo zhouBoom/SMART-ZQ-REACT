@@ -3,10 +3,12 @@ import chatReducer from './modules/chatSlice';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'
 import userReducer from './modules/userSlice';
+import conversationReducer from './modules/conversationSlice';
 
 const rootReducer = combineReducers({
     chat: chatReducer,
     user: userReducer,
+    conversation: conversationReducer,
     // 其他 slice
 });
 

@@ -7,7 +7,7 @@ import store from "../../store";
 import { Layout, Avatar, Button, Tabs, Input, List, Card } from "antd";
 import HeaderBar from "../../components/HeaderBar";
 import ConversationList from "../../components/ConversationList";
-
+import ChatWindow from "../../components/ChatWindow"
 const { Sider, Content } = Layout;
 const { TabPane } = Tabs;
 
@@ -46,9 +46,10 @@ const ChatPage = () => {
               <Button type="primary" ghost>关闭会话</Button>
             </div>
             {/* 消息列表 */}
-            <div style={{ flex: 1, background: "#fafafa", marginBottom: 16, padding: 16, overflowY: "auto" }}>
+            <ChatWindow />
+            {/* <div style={{ flex: 1, background: "#fafafa", marginBottom: 16, padding: 16, overflowY: "auto" }}>
               <div>（这里显示消息气泡、图片等）</div>
-            </div>
+            </div> */}
             {/* 输入框 */}
             <div>
               <Input.TextArea rows={2} placeholder="请输入..." />

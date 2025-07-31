@@ -33,15 +33,6 @@ const initWebSocket = (loginInfo: ILoginInfo, isSandBox:boolean = false, tempWsU
     }
   })
 }
-// 2. 发送消息
-// 3. 接收消息
-// 4. 断开连接
-
-// 1. websocket 连接
-// 2. 发送消息
-// 3. 接收消息
-// 4. 断开连接
-
 export {
   initWebSocket
 }

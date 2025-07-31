@@ -9,8 +9,8 @@ import { initWebSocket } from "@/util/ws/index";
 
 function App() {
   const setCookie = () => {
-    document.cookie = 'udc_sdk_uid=087337; path=/'
-    document.cookie = 'udc_token_int=ygp_UTdQbldsYjNlWGhHQWFOSzJyTXpxelo1QUJYeGhBUzlJbFpZWXNSYXJpWWhyT3lkRnpxUkdoNXUxc0Vjc3Nta1ZfTm16ZkVjeUw4djZ1Zk9wd3lYLW1sOWJuV0RVTmlRWWl1VVNZVnNlTzIxV3J4Sk1JeGJGWEpEQVRFbWh0VjZNU3ZNYjM4MkhOMEdqYlBGOFozOFJjQ3FzN2FmNmRZNEx2eXM2ckZjWmJrS3ZvcWRpZDUtUWkzc3Z6cm5ZYTkwLTBrZjNBQzdRMkdaY3o2dkFId0ZwOGlfczA4V0pWaGJLSnkzUWY2TG5PN20wYkZKekdHdTR6cUdvSWVXV3FuTnNhMGFldGlzT0JMQURrQ19nNzRaeTNRYm5aMXBTZnpmMkVaQlVzcHVCb00wX2tsT1dwQ2llMHhDX204Z29pUkU5YXFVZlNPTVhCZkpVT1Z4N2FkMENpLWdvOFRGdUNFdE9yb0JJZnBDQmJrMG93bDZ0RDMyeDhwY0dycHZYb0ZkTFZrdFhPMHhtQkdNM1U5WWlGYmp1dko5WXdzUjlRaDZfSGplU3VwTURGcFZPNllRU0tIU1dqeEhBVzRqVzV4N1Y3M2x2MmZqV21FTzRDRGlyTU1INFEO';
+    document.cookie = 'udc_sdk_uid=224596; path=/'
+    document.cookie = 'udc_token_int=mMa_RHZ6S3RlMXBCTE5WZkVoa0FPZ3pKZUUzc2JGVlFpcVVTM0tOSjU3d2E0RUtIOUxOaXk1U0tONGp6Q3h2YnpaUXdRSzNRazJlOUpFWnlYZkhCWXhsTTRPN3JTems3ZFpVaXR5SEthb01Ka1ppQ3RrRVhhUVVlM0thVWdpSkVFdEpsZ3RxbzFhdHpVMVRQMXJINXpINjFZUzI3aXNtVXVMZmlNOTd6MTNwenpDOEZtbVVyOENITkEtQVl4SFpDbzFMOEdXTnd2Ym1TSFhxcjdaY0gzU3dvcjV4akI1ZUplMGR2TmJqdVBSZ0poTDZhOHZLVExxZjVxNjNPTzRXanV0aElhSXY3TndTMW5RMkhSNnkwRU9ndHhzMzM5R1NUbXRwZ1gybmJxR0cwZ2d3Y00xbTVyR0EwYUNaMDR4T19lNWFDZzNPNU5yTldUZDFxNlo1a2VlMGJ1cnhVZHNmalhkdXFVdUdoVzRVUF8xcUM0dFFJRldPLWRmYWI2Ym1VeDFTNUJIUFFnMmd2Yk1qckpZWVBodC1VQ19PbmFFcHB0cFVPc21UdWZqVVQxZwp';
   }
   if (location.host.includes("localhost")) {
     setCookie();
@@ -41,7 +41,7 @@ function App() {
     console.log('开始获取会话列表...');
     dispatch(fetchConversationList({
       page: 1,
-      pageSize: 10
+      page_size: 2000
     }) as any);
   }
   // 监听data和status变化，只初始化一次

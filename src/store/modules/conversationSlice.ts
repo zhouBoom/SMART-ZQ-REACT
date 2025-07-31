@@ -17,8 +17,8 @@ interface ConversationState {
 
 export const fetchConversationList = createAsyncThunk(
     'conversation/fetchConversationList',
-    async (params: { page: number, pageSize: number }) => {
-        const response = await getConversationList(params.page, params.pageSize);
+    async (params: { page: number, page_size: number }) => {
+        const response = await getConversationList(params.page, params.page_size);
         return response.data?.data as ConversationListData;
     }
 );

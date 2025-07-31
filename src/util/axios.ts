@@ -28,7 +28,10 @@ service.interceptors.request.use((config: any) => {
     config.headers!['X-Requested-With'] = 'XMLHttpRequest'
     // 从Redux store获取用户数据
     // const state = store.getState() as RootState;
-    // 递归遍历config.data，判断是否包含不安全的链接
+    let corp_id = store.getState().user.data?.corp_list && store.getState().user.data?.corp_list[0] && store.getState().user.data?.corp_list[0].wx_corp_id
+    if(corp_id){
+        config.headers!['WX-CORPID'] = corp_id
+    }
     const checkLinks = (data: any) => {
         if (typeof data === 'object' && data !== null) {
             for (const key in data) {

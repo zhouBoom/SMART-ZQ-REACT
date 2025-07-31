@@ -28,9 +28,9 @@ interface ConversationListData {
     total_page: number;
     total_rows: number;
 }
-export const getConversationList = (page: number, pageSize: number): Promise<HttpSuccessData<ConversationListData>> => {
+export const getConversationList = async (page: number, page_size: number): Promise<HttpSuccessData<ConversationListData>> => {
     // 真实请求
-    return request.post(utils.getUdcapi() + '/zhuque/api/conversation/list', { page, pageSize }, {
+    return await request.post(utils.getUdcapi() + '/zhuque/api/conversation/list', { page, page_size }, {
         headers: {
             "Content-Type": "application/json"
         }

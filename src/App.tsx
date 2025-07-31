@@ -1,11 +1,11 @@
 import MainLayout from "./layouts/MainLayout";
 // import { getLoginStatusApi, getAuthApi } from "@/api/getAuthApi";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserInfo } from "@/store/modules/userSlice";
 import type { RootState } from "@/store/index";
 import { fetchConversationList } from "@/store/modules/conversationSlice";
-import { initWebSocket } from "@/util/wsChannel/index";
+import { initWebSocket } from "@/util/ws/index";
 
 function App() {
   const setCookie = () => {
@@ -16,35 +16,55 @@ function App() {
     setCookie();
   }
   const dispatch = useDispatch();
+  const initializedRef = useRef(false); // 用于防止重复初始化
+  
   useEffect(() => {
     dispatch(fetchUserInfo() as any);
   }, []);
+  
   const { data: userData, status: userStatus} = useSelector((state: RootState) => state.user);
-  const { data: convData, status: convStatus} = useSelector((state: RootState) => state.conversation);
-  console.log('data', userData);
-  console.log('status', userStatus);
+  
+  // 只在数据真正变化时才打印
+  useEffect(() => {
+    if (userData) {
+      console.log('userData 更新:', userData);
+    }
+  }, [userData]);
+  
+  useEffect(() => {
+    if (userStatus) {
+      console.log('userStatus 更新:', userStatus);
+    }
+  }, [userStatus]);
   // 初始化获取会话列表
   const initConvList = () => {
+    console.log('开始获取会话列表...');
     dispatch(fetchConversationList({
       page: 1,
       pageSize: 10
     }) as any);
-    console.log('initConvList', convData?.list, convStatus);
   }
-  // 监听data和status变化
+  // 监听data和status变化，只初始化一次
   useEffect(() => {
-    // 初始化socket连接 如果status为success并且data不为空，则初始化socket连接或者重新初始化
-    console.log('data', userData);
-    if (userStatus === 'success' && userData && userData.corp_list.length > 0) {
+    // 只有当状态为success且有数据时才执行初始化，并且只初始化一次
+    if (userStatus === 'success' && userData?.corp_list?.length && userData.corp_list.length > 0 && !initializedRef.current) {
+      initializedRef.current = true; // 标记已初始化
+      console.log('开始初始化socket连接和会话列表...');
+      
       initConvList();
       initWebSocket(
         { 'WX-CORPID': userData.corp_list[0].wx_corp_id },
         ['test-udc.100tal.com', '127.0.0.1', '10.29', 'localhost'].some(
           (url) => location.href.includes(url)
         )
-      );
+      ).then((result: any) => {
+        console.log('websocket 连接成功', result);
+      }).catch((error: any) => {
+        console.error('websocket 连接失败', error);
+        initializedRef.current = false; // 连接失败时重置标记，允许重试
+      });
     }
-  }, [userData, userStatus]);
+  }, [userStatus, userData?.corp_list?.length]); // 只监听数组长度变化
 
   return (
     <MainLayout />

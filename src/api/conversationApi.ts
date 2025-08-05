@@ -1,5 +1,5 @@
 // 会话相关api
-import request from "@/util/axios";
+import { request } from '@/util/request';
 import type { HttpSuccessData } from '@/util/type';
 import utils from "@/util/utils";
 
@@ -31,6 +31,15 @@ interface ConversationListData {
 export const getConversationList = async (page: number, page_size: number): Promise<HttpSuccessData<ConversationListData>> => {
     // 真实请求
     return await request.post(utils.getUdcapi() + '/zhuque/api/conversation/list', { page, page_size }, {
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+};
+
+export const setCurrentConversation = async (conv_id: number): Promise<HttpSuccessData<{}>> => {
+    // 真实请求
+    return await request.post(utils.getUdcapi() + '/zhuque/api/conversation/current/set', { conv_id }, {
         headers: {
             "Content-Type": "application/json"
         }

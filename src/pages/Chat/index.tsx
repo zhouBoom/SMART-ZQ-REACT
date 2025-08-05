@@ -1,5 +1,5 @@
 // src/pages/Chat/index.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../../store";
 import { addMessage, clearMessages, fetchMessages } from "../../store/modules/chatSlice";
@@ -8,10 +8,35 @@ import { Layout, Avatar, Button, Tabs, Input, List, Card } from "antd";
 import HeaderBar from "../../components/HeaderBar";
 import ConversationList from "../../components/ConversationList";
 import ChatWindow from "../../components/ChatWindow"
+// ws
+import { addNewMsgListener } from "../../util/ws/index";
+
 const { Sider, Content } = Layout;
 const { TabPane } = Tabs;
-
-const ChatPage = () => {
+// const dispatch = useDispatch();
+  // const [input, setInput] = useState("");
+const ChatPage: React.FC = () => {
+  const [msgList, setMsgList] = useState<Array<any[]>>([]);
+  // const [convId, setConvId] = useState("");
+  const convId = useRef("100146");
+  let currentNewMsgListenerId = 0;
+  useEffect(() => {
+    // dispatch(fetchMessages("123"));
+    init();
+  }, []);
+  const init = () => {
+    // await store.dispatch('setCurrentConversation', { convId, is_read: '1', is_transfer: 0 });
+    registerNewMsgListener(msgList)
+  }
+  const registerNewMsgListener = (msgList: any) => {
+    if(!convId)return
+    currentNewMsgListenerId = addNewMsgListener(convId + '', (res) => {
+      console.log('收到的消息', res)
+    })
+  }
+  const sendMsg = () => {
+    console.log("sendMsg");
+  }
   return (
     <Layout style={{ height: "100vh" }}>
       <HeaderBar />
@@ -53,7 +78,7 @@ const ChatPage = () => {
             {/* 输入框 */}
             <div>
               <Input.TextArea rows={2} placeholder="请输入..." />
-              <Button type="primary" style={{ marginTop: 8 }}>发送</Button>
+              <Button type="primary" style={{ marginTop: 8 }} onClick={sendMsg}>发送</Button>
             </div>
           </div>
           {/* 右侧 tab 区域 */}
@@ -81,38 +106,5 @@ const ChatPage = () => {
     </Layout>
   )
 }
-
-const Chat: React.FC = () => {
-  const { messages, loading, error } = useSelector((state: RootState) => state.chat);
-  const dispatch = useDispatch<AppDispatch>();
-  const [input, setInput] = useState("");
-  useEffect(() => {
-    dispatch(fetchMessages("123"));
-  }, [dispatch]);
-  return (
-    <div>
-      <h1>聊天页 Chat</h1>
-      <div>
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder="输入消息"
-        />
-        <button onClick={() => {
-          if (input.trim()) {
-            dispatch(addMessage(input));
-            setInput("");
-          }
-        }}>发送</button>
-        <button onClick={() => dispatch(clearMessages())}>清空</button>
-        <button onClick={() => console.log(store.getState())}>打印当前state</button>
-        <button onClick={() => dispatch(fetchMessages('123'))}>获取消息</button>
-      </div>
-      <ul>
-        {messages.map((msg, idx) => <li key={idx}>{msg}</li>)}
-      </ul>
-    </div>
-  );
-};
 
 export default ChatPage;

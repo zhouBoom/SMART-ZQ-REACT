@@ -20,15 +20,6 @@ const ChatPage: React.FC = () => {
     msgList,
     sendMessage,
     handleInputChange,
-    
-    // 操作相关
-    transferConversation,
-    closeConversation,
-    hasCurrentConversation,
-    
-    // 客户信息相关
-    customerInfo,
-    customerLoading,
   } = useChat();
   return (
     <Layout style={{ height: "100vh" }}>

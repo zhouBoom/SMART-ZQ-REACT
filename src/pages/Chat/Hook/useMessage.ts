@@ -105,12 +105,15 @@ export const useMessage = () => {
     }
 
     currentNewMsgListenerId.current = addNewMsgListener(convId, (res) => {
+      if (res.send_type == 1) {
+        return;
+      }
       console.log('==收到的消息==', res);
       // 处理接收到的消息
       const receivedMessage: Message = {
         id: Date.now().toString(),
-        content: typeof res.content === 'string' ? res.content : '收到新消息',
-        sender: typeof res.sender === 'string' ? res.sender : '客服',
+        content: res.content?.type == "TEXT" ? res.content.text?.content || '' : '收到新消息',
+        sender: res.sender_info?.name || '客服',
         receiver: '用户',
         timestamp: Date.now(),
         type: 'TEXT',

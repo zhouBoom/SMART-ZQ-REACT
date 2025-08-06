@@ -7,7 +7,7 @@ import { UserOutlined } from "@ant-design/icons";
 const { Sider, Content } = Layout;
 
 const MainLayout = () => (
-  <Layout style={{ height: "100vh" }}>
+  <Layout style={{ height: "80vh" }}>
     <Sider width={200}>
         <div style={{ padding: 16, textAlign: "center", background: "#fff" }}>
             <Avatar size={64} icon={<UserOutlined />} />

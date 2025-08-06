@@ -53,7 +53,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       {!message.isSelf && (
         <Avatar 
           size="small" 
-          src={message.avatar}
+        //   src={message.avatar}
           className="message-avatar"
         >
           {message.sender?.charAt(0)}
@@ -62,7 +62,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       
       <div className="message-content">
         <div className={`message-bubble ${message.isSelf ? 'self' : 'other'}`}>
-          <div className="message-text">{message.content}</div>
+          <div className="message-text" dangerouslySetInnerHTML={{ __html: message.content }}></div>
           
           {showTime && (
             <div className="message-time">
@@ -84,7 +84,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       {message.isSelf && (
         <Avatar 
           size="small" 
-          src={message.avatar}
+        //   src={message.avatar}
           className="message-avatar"
         >
           {message.sender?.charAt(0)}

@@ -2,21 +2,22 @@
 import React, { useEffect } from "react";
 import { Input, List, Avatar } from "antd";
 import { useSelector, useDispatch } from "react-redux";
-import type { RootState } from "@/store";
-import { fetchConversationList, setCurrentConversationData } from "@/store/modules/conversationSlice";
+import type { RootState, AppDispatch } from "@/store";
+import { fetchConversationList, setCurrentConversationData, fetchSetCurrentConversation } from "@/store/modules/conversationSlice";
 import "./index.less";
 import ConversationItem from "../ConversationItem";
 
 const ConversationList = () => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const { data, currentConversation, status } = useSelector((state: RootState) => state.conversation);
 
     useEffect(() => {
         // 组件加载时获取会话列表
-        dispatch(fetchConversationList({ page: 1, page_size: 10 }) as any);
+        dispatch(fetchConversationList({ page: 1, page_size: 10 }));
     }, [dispatch]);
 
     const handleConversationClick = (conversation: any) => {
+        console.log('==设置当前会话==', conversation)
         // 点击会话时设置当前会话
         dispatch(setCurrentConversationData({
             wx_corp_id: conversation.wx_corp_id || '',
@@ -25,6 +26,8 @@ const ConversationList = () => {
             wx_ext_userid: conversation.wx_ext_userid || '',
             name: conversation.wx_user_name || conversation.chat_name || '',
         }));
+        // 接口请求设置当前会话
+        dispatch(fetchSetCurrentConversation(conversation.id));
     };
 
     return (

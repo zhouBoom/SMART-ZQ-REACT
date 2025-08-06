@@ -1,8 +1,14 @@
 import axios from 'axios';
 import { message } from 'antd';
-import store from '@/store/index';
-import type { RootState } from '@/store/index';
 import Utils from '@/util/utils';
+
+// 全局变量存储store实例，避免循环依赖
+let globalStore: any = null;
+
+// 设置store实例的方法
+export const setGlobalStore = (store: any) => {
+    globalStore = store;
+};
 
 // 创建axios实例
 const service = axios.create({
@@ -26,11 +32,17 @@ const service = axios.create({
 service.interceptors.request.use((config: any) => {
     // 设置默认请求头
     config.headers!['X-Requested-With'] = 'XMLHttpRequest'
-    // 从Redux store获取用户数据
-    // const state = store.getState() as RootState;
-    let corp_id = store.getState().user.data?.corp_list && store.getState().user.data?.corp_list[0] && store.getState().user.data?.corp_list[0].wx_corp_id
-    if(corp_id){
-        config.headers!['WX-CORPID'] = corp_id
+    // 从Redux store获取用户数据 - 使用全局变量避免循环依赖
+    try {
+        if (globalStore) {
+            const state = globalStore.getState();
+            const corp_id = state.user?.data?.corp_list?.[0]?.wx_corp_id;
+            if (corp_id) {
+                config.headers!['WX-CORPID'] = corp_id;
+            }
+        }
+    } catch (error) {
+        console.warn('无法获取store中的corp_id:', error);
     }
     const checkLinks = (data: any) => {
         if (typeof data === 'object' && data !== null) {

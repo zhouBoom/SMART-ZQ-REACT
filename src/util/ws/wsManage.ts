@@ -45,9 +45,24 @@ export class WsManage {
     }
   }
 
-  async wsSend(content: Object) {
+  async sendMsg(content: Object) {
     if (this._wsChannel) {
         this._wsChannel.sendMessage(ACTION_TYPE.SEND_MSG, content);
     }
+  }
+
+  /**
+   * 缓存消息
+   */
+  startCache() {
+    if (this._wsChannel) {
+        this._wsChannel.startCache();
+    }
+  }
+  /**
+   * 停止缓存并更新队列
+   */
+  stopCacheAndFlush () {
+    this._wsChannel?.stopCacheAndFlush()
   }
 }

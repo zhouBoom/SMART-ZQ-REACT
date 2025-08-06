@@ -40,7 +40,9 @@ type TypeNewMsgCallback = {
   event_id: number,
   callback: (res: TypeMsg) => void
 }
-
+/**
+ * 注册新消息监听
+ */
 const addNewMsgListener = (convId: string, callBack: TypeNewMsgCallback["callback"]) => {
   console.log("注册新消息");
   if (!listeners.recv_msg) { // 判断有没有已经存在收到的消息，因为这是切换会话注册的，所以需要清空
@@ -58,7 +60,9 @@ const addNewMsgListener = (convId: string, callBack: TypeNewMsgCallback["callbac
   console.log("消息队列", listeners.recv_msg[convId]);
   return eventId;
 }
-
+/**
+ * 移除新消息监听
+ */
 const removeNewMsgListener = (eventId: number) => {
   if (!listeners.recv_msg) return
   first: for (let key in listeners.recv_msg) {
@@ -73,11 +77,18 @@ const removeNewMsgListener = (eventId: number) => {
       }
   }
 }
+/**
+ * 发送消息
+ */
+
 
 type TypeAccountMsgCountResult = {
   wx_userid: string,
   wx_corp_id: string,
   unread_total: number
+}
+const sendMsg = (sendInfo: any) => {
+  WsManage.instance.sendMsg(sendInfo)
 }
 
 type TypeAccountMsgCountCallback = {
@@ -115,5 +126,6 @@ export {
   addNewMsgListener,
   removeNewMsgListener,
   addAccountMsgCountListener,
-  removeAccountMsgCountListener
+  removeAccountMsgCountListener,
+  sendMsg
 }

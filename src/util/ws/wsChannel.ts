@@ -1,6 +1,7 @@
 // socket 通道
 import { uuid } from '../utils';
 import { ACTION_TYPE } from './msgType';
+import { messageQueue, listeners } from './common';
 
 export interface ILoginInfo {
   'WX-CORPID': string
@@ -94,7 +95,6 @@ export class WsChannel {
       this._restReconnectCount = this._maxReconnectCount;
     }
     ioInstance.onmessage = (event: MessageEvent) => {
-      console.log('websocket 收到消息', event);
       let result = JSON.parse(event.data)
       if (!result.action) {
         console.error('接收到的消息格式不正确', result)
@@ -116,6 +116,15 @@ export class WsChannel {
             this.endWaitingPong();
             this.startWaitingPong();
             break
+        case ACTION_TYPE.RECEIVE_MSG:
+            this.onMessage(result)
+            break
+      }
+      if(result.action == 'pong'){
+        return
+      }
+      if (this._isFlushMsg) {
+        this.stopCacheAndFlush()
       }
     }
     ioInstance.onclose = () => {
@@ -138,8 +147,149 @@ export class WsChannel {
   /**
    * 收到消息
    */
-  private onMessage(event: MessageEvent) {
-    console.log('websocket 收到消息', event);
+  private onMessage(result: any) {
+    // 屏蔽ping和pong消息
+    console.log('==data.action==', result.action)
+    if(result.action == ACTION_TYPE.PING || result.action == ACTION_TYPE.PONG) {
+      return
+    }
+    console.log('websocket 收到消息', result);
+    let tempArr = result.data.messages
+    for (let i = 0; i < tempArr.length; i++) {
+        let msgBaseInfo = {
+            workcode:  result.data.workcode,
+            wx_userid: result.data.wx_userid,
+            wx_corp_id: result.data.wx_corp_id,
+            conv_id: result.data.conv_id,
+            conv_type: result.data.conv_type,
+            sender: tempArr[i].sender,
+            receiver: tempArr[i].receiver,
+            status: tempArr[i].status,
+            msgid: tempArr[i].msgid,
+            send_time: tempArr[i].send_time,
+            server_id: tempArr[i].server_id,
+            local_id: tempArr[i].local_id,
+            send_type: tempArr[i].send_type,
+            is_hide_revoke: tempArr[i].send_type == 1,
+            sender_info: {
+              name: tempArr[i].sender_info.name,
+              avatar: tempArr[i].sender_info.avatar
+            },
+            receiver_info: {
+              name: tempArr[i].receiver_info.name,
+              avatar: tempArr[i].receiver_info.avatar
+            }
+        }
+        // 初始化消息队列
+        if(!messageQueue.recv_msg![result.data.conv_id]){
+            messageQueue.recv_msg![result.data.conv_id] = []
+        }
+        // 处理引用消息
+        const contentType = tempArr[i].content.type.toLowerCase() == 'img' ? 'image' : tempArr[i].content.type.toLowerCase()
+        const quoteMsg = {
+                quote_msg_type: tempArr[i].content[contentType].quote_msg_type,
+                quote_msg_content: tempArr[i].content[contentType].quote_msg_content,
+                quote_msg_send_time: tempArr[i].content[contentType].quote_msg_send_time,
+                quote_msg_sender: tempArr[i].content[contentType].quote_msg_sender,
+                quote_msg_sender_name: tempArr[i].content[contentType].quote_msg_sender_name,
+                quote_msg_file_path: tempArr[i].content[contentType].quote_msg_file_path,
+                quote_msg_file_name: tempArr[i].content[contentType].quote_msg_file_name,
+                revoke: tempArr[i].content[contentType].revoke
+        }
+        // 将消息添加到消息队列
+        messageQueue.recv_msg![result.data.conv_id].push({
+            ...msgBaseInfo,
+            content:{
+              type: tempArr[i].content.type,
+              text: {
+                content: tempArr[i].content.text?.content,
+                ...quoteMsg
+              },
+              image: {
+                url: tempArr[i].content.image?.url,
+                md5: tempArr[i].content.image?.md5,
+                name: tempArr[i].content.image?.name,
+                ...quoteMsg
+              },
+              video: {
+                url: tempArr[i].content.video?.url,
+                md5: tempArr[i].content.video?.md5,
+                name: tempArr[i].content.video?.name,
+                thumb_url: tempArr[i].content.video?.thumb_url,
+                ...quoteMsg
+              },
+              voice: {
+                url: tempArr[i].content.voice?.url,
+                md5: tempArr[i].content.voice?.md5,
+                name: tempArr[i].content.voice?.name,
+                duration: tempArr[i].content.voice?.duration,
+                text: tempArr[i].content.voice?.text,
+                media_id: tempArr[i].content.voice?.media_id,
+                ...quoteMsg
+              },
+              file: {
+                url: tempArr[i].content.file?.url,
+                md5: tempArr[i].content.file?.md5,
+                name: tempArr[i].content.file?.name,
+                ...quoteMsg
+              },
+              video_call: {
+                duration: tempArr[i].content.video_call?.duration,
+                ...quoteMsg
+              },
+              voice_call: {
+                duration: tempArr[i].content.voice_call?.duration,
+                ...quoteMsg
+              },
+              link: {
+                title: tempArr[i].content.link?.title,
+                desc: tempArr[i].content.link?.desc,
+                url: tempArr[i].content.link?.url,
+                ...quoteMsg
+              },
+              card: {
+                avatar: tempArr[i].content.card?.avatar,
+                nickname: tempArr[i].content.card?.nickname,
+                ...quoteMsg
+              },
+              emotion: {
+                url: tempArr[i].content.emotion?.url,
+                ...quoteMsg
+              },
+              we_app: {...tempArr[i].content.we_app, ...quoteMsg},
+              sph_video: {...tempArr[i].content.sph_video, ...quoteMsg},
+              sph_live: {...tempArr[i].content.sph_live, ...quoteMsg},
+              sph_card: {...tempArr[i].content.sph_card, ...quoteMsg}
+            }
+          })
+          console.log('==messageQueue.recv_msg==', messageQueue.recv_msg)
+    }
+  }
+  /**
+   * 收到消息的回调函数
+   */
+  private callReceiveMsgListener(){
+    console.log('==callReceiveMsgListener==')
+    let tempReceiveMsgObj = messageQueue.recv_msg || {}
+    for(let key in tempReceiveMsgObj){
+      let msgList = tempReceiveMsgObj[key]
+      console.log('==msgList==', msgList)
+      let msgListenerList = listeners.recv_msg && listeners.recv_msg[key]
+      console.log('==msgListenerList==', msgListenerList)
+      if(Array.isArray(msgList) && Array.isArray(msgListenerList)){
+        for(let i = 0; i < msgList.length; i++){
+          msgListenerList.forEach(listener=>{
+            listener.callback(msgList[i])
+          })
+          // 会话条目上的监听事件提取到父组件后，需要一个全局的监听事件
+          listeners.recv_msg && listeners.recv_msg.all_new_msg_listener?.forEach(listener=>{
+            listener.callback(msgList[i])
+          })
+          msgList.splice(i, 1)
+          i--
+        }
+      }
+    }
   }
   /**
    * 发送消息
@@ -217,5 +367,18 @@ export class WsChannel {
       this._onReady = undefined;
       onReady();
     }
+  }
+
+  /**
+   * 开始缓存消息
+   */
+  startCache() {
+    this._isFlushMsg = false
+  }
+
+  // 停止缓存并刷新
+  stopCacheAndFlush() {
+    this._isFlushMsg = true
+    this.callReceiveMsgListener()
   }
 }

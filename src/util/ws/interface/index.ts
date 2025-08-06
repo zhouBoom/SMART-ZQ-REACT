@@ -324,7 +324,7 @@ type TypeRevokeMsgResult = {
 }
 type TypeMsgQueue = {
     recv_msg?: {
-        [conv_id:string]: Array<TypeMsg>
+        [conv_id:string]: Array<any>
     },
     online_status?: Array<TypeAccountOnlineStatusResult>
     account_unread_msg?: Array<TypeAccountMsgCountResult>,

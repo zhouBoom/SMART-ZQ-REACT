@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../../store";
 import { addMessage, clearMessages, fetchMessages } from "../../store/modules/chatSlice";
+import { fetchSetCurrentConversation } from "../../store/modules/conversationSlice";
 import store from "../../store";
 import { Layout, Avatar, Button, Tabs, Input, List, Card } from "antd";
 import HeaderBar from "../../components/HeaderBar";
@@ -10,6 +11,7 @@ import ConversationList from "../../components/ConversationList";
 import ChatWindow from "../../components/ChatWindow"
 // ws
 import { addNewMsgListener } from "../../util/ws/index";
+import { clickToSendMsg } from "./Hook/send";
 
 const { Sider, Content } = Layout;
 const { TabPane } = Tabs;
@@ -17,6 +19,7 @@ const { TabPane } = Tabs;
   // const [input, setInput] = useState("");
 const ChatPage: React.FC = () => {
   const [msgList, setMsgList] = useState<Array<any[]>>([]);
+  const [inputText, setInputText] = useState("");
   // const [convId, setConvId] = useState("");
   const convId = useRef("100146");
   let currentNewMsgListenerId = 0;
@@ -24,18 +27,23 @@ const ChatPage: React.FC = () => {
     // dispatch(fetchMessages("123"));
     init();
   }, []);
-  const init = () => {
-    // await store.dispatch('setCurrentConversation', { convId, is_read: '1', is_transfer: 0 });
-    registerNewMsgListener(msgList)
+  const init = async () => {
+    await store.dispatch(fetchSetCurrentConversation(Number(convId.current)) as any);
+    registerRecvNewMsgListener(msgList)
   }
-  const registerNewMsgListener = (msgList: any) => {
+  const registerRecvNewMsgListener = (msgList: any) => {
     if(!convId)return
-    currentNewMsgListenerId = addNewMsgListener(convId + '', (res) => {
-      console.log('收到的消息', res)
+    currentNewMsgListenerId = addNewMsgListener(convId.current + '', (res) => {
+      console.log('==收到的消息==', res)
     })
   }
   const sendMsg = () => {
     console.log("sendMsg");
+    clickToSendMsg(inputText);
+  }
+  const handleInputTextChange = (e: any) => {
+    const value = e.target.value;
+    setInputText(value);
   }
   return (
     <Layout style={{ height: "100vh" }}>
@@ -77,7 +85,7 @@ const ChatPage: React.FC = () => {
             </div> */}
             {/* 输入框 */}
             <div>
-              <Input.TextArea rows={2} placeholder="请输入..." />
+              <Input.TextArea value={inputText} onChange={handleInputTextChange} rows={2} placeholder="请输入..." />
               <Button type="primary" style={{ marginTop: 8 }} onClick={sendMsg}>发送</Button>
             </div>
           </div>

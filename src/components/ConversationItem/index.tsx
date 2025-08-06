@@ -1,14 +1,19 @@
 import { Avatar } from "antd";
 import "./index.less"
 
-const ConversationItem = () => {
+interface ConversationItemProps {
+    conversation?: any;
+    isSelected?: boolean;
+}
+
+const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, isSelected = false }) => {
     return (
-        <div className="conversation-item-container">
-            <Avatar></Avatar>
+        <div className={`conversation-item-container ${isSelected ? 'selected' : ''}`}>
+            <Avatar src={conversation?.avatar}></Avatar>
             <div className="content">
-                <div className="title">原点</div>
-                <div className="desc">12345</div>
-                <div className="lastMsg">最后一条消息</div>
+                <div className="title">{conversation?.wx_user_name || conversation?.chat_name || '未知用户'}</div>
+                <div className="desc">{conversation?.wx_userid || ''}</div>
+                <div className="lastMsg">{conversation?.last_msg || '暂无消息'}</div>
             </div>
         </div>
     )

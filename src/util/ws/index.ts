@@ -1,4 +1,7 @@
 // socket 通道
+/**
+ * 对外接口层
+ */
 import { WsManage } from './wsManage';
 import type { TypeMsg } from './interface/index';
 import { listeners, nextSeq } from './common';
@@ -77,18 +80,43 @@ const removeNewMsgListener = (eventId: number) => {
       }
   }
 }
-/**
- * 发送消息
- */
-
 
 type TypeAccountMsgCountResult = {
   wx_userid: string,
   wx_corp_id: string,
   unread_total: number
 }
-const sendMsg = (sendInfo: any) => {
+
+const sendMsg = (sendInfo: any, updateCallback: any) => {
   WsManage.instance.sendMsg(sendInfo)
+  /**
+   * 注册消息更新回执监听
+   */
+  const addUpdateMsgListener = () => {
+    if (!Array.isArray(listeners.update_msg_status)) {
+      listeners.update_msg_status = {};
+    }
+    if (!Array.isArray(listeners.update_msg_status[sendInfo.conv_id])) {
+      listeners.update_msg_status[sendInfo.conv_id] = []
+    }
+    let eventId = nextSeq();
+    let callBackParams = {
+      event_id: eventId,
+      callback: updateCallback
+    }
+    listeners.update_msg_status[sendInfo.conv_id].push(callBackParams);
+    console.log('==listeners.update_msg_status==', listeners.update_msg_status)
+  }
+  addUpdateMsgListener()
+}
+
+/**
+ * 移除消息更新回执监听
+ */
+const removeUpdateMsgListener = (eventId: number) => {
+  if (!Array.isArray(listeners.update_msg_status)) {
+    return
+  }
 }
 
 type TypeAccountMsgCountCallback = {
@@ -121,11 +149,20 @@ const removeAccountMsgCountListener = (eventId: number) => {
       }
   }
 }
+
+const uuid = () => {
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+		var r = Math.random() * 16 | 0,
+			v = c == 'x' ? r : (r & 0x3 | 0x8);
+		return v.toString(16);
+	});
+}
 export {
   initWebSocket,
   addNewMsgListener,
   removeNewMsgListener,
   addAccountMsgCountListener,
   removeAccountMsgCountListener,
-  sendMsg
+  sendMsg,
+  uuid
 }

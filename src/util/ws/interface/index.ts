@@ -261,6 +261,7 @@ type TypeLogoutCallback = {
     callback: ()=>void
 } 
 type TypeUpdateStatusResult = {
+    callback(item: TypeUpdateStatusResult): unknown
     content?: TypeMsgContent,
     is_update?: boolean,
     wx_userid?: string,

@@ -1,4 +1,12 @@
 // 管理websocket连接
+/**
+ * 管理层、负责连接管理和消息路由
+ * 单例模式管理WebSocket连接
+ * 初始化WebSocket连接
+ * 管理连接的生命周期
+ * 提供消息发送接口
+ * 管理消息缓存机制
+ */
 import { WsChannel } from './wsChannel';
 import type { ILoginInfo } from './wsChannel';
 import { ACTION_TYPE } from './msgType';

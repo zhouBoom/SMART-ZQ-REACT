@@ -1,4 +1,13 @@
 // socket 通道
+/**
+ * 通道层
+ * 负责websocket连接的创建和维护
+ * 处理消息的接收和发送
+ * 管理消息缓存机制
+ * 处理重连机制
+ * 处理ping/pong心跳机制
+ * 处理鉴权机制
+ */
 import { uuid } from '../utils';
 import { ACTION_TYPE } from './msgType';
 import { messageQueue, listeners } from './common';
@@ -119,6 +128,9 @@ export class WsChannel {
         case ACTION_TYPE.RECEIVE_MSG:
             this.onMessage(result)
             break
+        case ACTION_TYPE.UPDATE_MSG:
+            this.onUpdateMsg(result)
+            break
       }
       if(result.action == 'pong'){
         return
@@ -143,6 +155,18 @@ export class WsChannel {
     this._ioInstance.onopen = () => {
       console.log('websocket 连接成功');
     }
+  }
+  /**
+   * 收到消息更新回执
+   * @param result 
+   */
+  private onUpdateMsg(result: any) {
+    console.log('==onUpdateMsg==', result)
+    // push到update的执行队列里
+    messageQueue.update_msg_status?.push({
+      is_update: true,
+      ...result.data
+    })
   }
   /**
    * 收到消息
@@ -289,7 +313,26 @@ export class WsChannel {
           i--
         }
       }
-    }
+  }
+    // for(let key in tempUpdateMsgObj){
+    //   let msgList = tempUpdateMsgObj[key]
+    //   console.log('==msgList==', msgList)
+    //   let msgListenerList = listeners.recv_msg && listeners.recv_msg[key]
+    //   console.log('==msgListenerList==', msgListenerList)
+    //   if(Array.isArray(msgList) && Array.isArray(msgListenerList)){
+    //     for(let i = 0; i < msgList.length; i++){
+    //       msgListenerList.forEach(listener=>{
+    //         listener.callback(msgList[i])
+    //       })
+    //       // 会话条目上的监听事件提取到父组件后，需要一个全局的监听事件
+    //       listeners.recv_msg && listeners.recv_msg.all_new_msg_listener?.forEach(listener=>{
+    //         listener.callback(msgList[i])
+    //       })
+    //       msgList.splice(i, 1)
+    //       i--
+    //     }
+    //   }
+    // }
   }
   /**
    * 发送消息
@@ -304,6 +347,20 @@ export class WsChannel {
         }
         let sendData = JSON.stringify(target)
         this._ioInstance.send(sendData)
+    }
+  }
+
+  callUpdateMsgListener() {
+    let tempArr = messageQueue.update_msg_status || [];
+    for (let i = 0; i < tempArr.length; i++) {
+      let item = tempArr[i];
+      if (listeners.update_msg_status && Array.isArray(listeners.update_msg_status![item.conv_id])) {
+        listeners.update_msg_status![item.conv_id].forEach((listener: any)=>{
+            listener.callback(item.tmp_id, item.msgid);
+        });
+        tempArr.splice(i, 1);
+        i--;
+      }
     }
   }
   /**
@@ -380,5 +437,6 @@ export class WsChannel {
   stopCacheAndFlush() {
     this._isFlushMsg = true
     this.callReceiveMsgListener()
+    this.callUpdateMsgListener()
   }
 }

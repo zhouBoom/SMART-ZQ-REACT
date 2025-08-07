@@ -1,4 +1,6 @@
 export interface Message {
+  tmp_id?: string;
+  msgid: number | undefined;
   id: string;
   content: string;
   sender: string;

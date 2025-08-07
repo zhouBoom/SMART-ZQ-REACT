@@ -4,6 +4,7 @@ import type { RootState } from '@/store';
 import { addNewMsgListener } from '@/util/ws/index';
 import { clickToSendMsg } from './send';
 import type { Message } from '@/types/message';
+import { uuid } from '@/util/ws/index';
 
 export const useMessage = () => {
   const [inputText, setInputText] = useState('');
@@ -13,44 +14,44 @@ export const useMessage = () => {
   const { currentConversation } = useSelector((state: RootState) => state.conversation);
 
   // 添加测试数据
-  useEffect(() => {
-    const testMessages: Message[] = [
-      {
-        id: '1',
-        content: '你好，我是客服小助手，有什么可以帮助您的吗？',
-        sender: '客服',
-        receiver: '用户',
-        timestamp: Date.now() - 60000,
-        type: 'TEXT',
-        isSelf: false,
-        status: 'sent',
-        avatar: '',
-      },
-      {
-        id: '2',
-        content: '我想咨询一下产品信息',
-        sender: '用户',
-        receiver: '客服',
-        timestamp: Date.now() - 30000,
-        type: 'TEXT',
-        isSelf: true,
-        status: 'sent',
-        avatar: '',
-      },
-      {
-        id: '3',
-        content: '好的，请问您想了解哪个产品呢？',
-        sender: '客服',
-        receiver: '用户',
-        timestamp: Date.now() - 10000,
-        type: 'TEXT',
-        isSelf: false,
-        status: 'sent',
-        avatar: '',
-      },
-    ];
-    setMsgList(testMessages);
-  }, []);
+  // useEffect(() => {
+  //   const testMessages: Message[] = [
+  //     {
+  //       id: '1',
+  //       content: '你好，我是客服小助手，有什么可以帮助您的吗？',
+  //       sender: '客服',
+  //       receiver: '用户',
+  //       timestamp: Date.now() - 60000,
+  //       type: 'TEXT',
+  //       isSelf: false,
+  //       status: 'sent',
+  //       avatar: '',
+  //     },
+  //     {
+  //       id: '2',
+  //       content: '我想咨询一下产品信息',
+  //       sender: '用户',
+  //       receiver: '客服',
+  //       timestamp: Date.now() - 30000,
+  //       type: 'TEXT',
+  //       isSelf: true,
+  //       status: 'sent',
+  //       avatar: '',
+  //     },
+  //     {
+  //       id: '3',
+  //       content: '好的，请问您想了解哪个产品呢？',
+  //       sender: '客服',
+  //       receiver: '用户',
+  //       timestamp: Date.now() - 10000,
+  //       type: 'TEXT',
+  //       isSelf: false,
+  //       status: 'sent',
+  //       avatar: '',
+  //     },
+  //   ];
+  //   setMsgList(testMessages);
+  // }, []);
 
   // 发送消息
   const sendMessage = () => {
@@ -60,6 +61,8 @@ export const useMessage = () => {
     
     // 创建新消息
     const newMessage: Message = {
+      tmp_id: uuid(),
+      msgid: undefined,
       id: Date.now().toString(),
       content: inputText,
       sender: '用户',
@@ -75,19 +78,19 @@ export const useMessage = () => {
     setMsgList(prev => [...prev, newMessage]);
     
     // 发送消息
-    clickToSendMsg(inputText);
+    clickToSendMsg(newMessage, setMsgList);
     setInputText('');
     
     // 模拟发送成功
-    setTimeout(() => {
-      setMsgList(prev => 
-        prev.map(msg => 
-          msg.id === newMessage.id 
-            ? { ...msg, status: 'sent' as const }
-            : msg
-        )
-      );
-    }, 1000);
+    // setTimeout(() => {
+    //   setMsgList(prev => 
+    //     prev.map(msg => 
+    //       msg.id === newMessage.id 
+    //         ? { ...msg, status: 'sent' as const }
+    //         : msg
+    //     )
+    //   );
+    // }, 1000);
   };
 
   // 处理输入框变化
@@ -106,11 +109,21 @@ export const useMessage = () => {
 
     currentNewMsgListenerId.current = addNewMsgListener(convId, (res) => {
       if (res.send_type == 1) {
+        // 发送成功消息回执，不处理
+        console.log('==发送成功消息回执==', res);
+        setMsgList(prev => prev.map(msg => {
+          console.log('msg.msgid', msg, 'res.msgid', res.msgid);
+          if (msg.msgid === res.msgid) {
+            return { ...msg, status: 'sent' as const };
+          }
+          return msg;
+        }));
         return;
       }
       console.log('==收到的消息==', res);
       // 处理接收到的消息
       const receivedMessage: Message = {
+        msgid: res.msgid,
         id: Date.now().toString(),
         content: res.content?.type == "TEXT" ? res.content.text?.content || '' : '收到新消息',
         sender: res.sender_info?.name || '客服',

@@ -349,19 +349,31 @@ export class WsChannel {
         this._ioInstance.send(sendData)
     }
   }
-
+  /**
+   * 消费update_msg_status队列中的消息
+   */
   callUpdateMsgListener() {
     let tempArr = messageQueue.update_msg_status || [];
-    for (let i = 0; i < tempArr.length; i++) {
-      let item = tempArr[i];
-      if (listeners.update_msg_status && Array.isArray(listeners.update_msg_status![item.conv_id])) {
-        listeners.update_msg_status![item.conv_id].forEach((listener: any)=>{
-            listener.callback(item.tmp_id, item.msgid);
+    if (tempArr.length === 0) return;
+    
+    // 过滤出有对应监听器的消息
+    const messagesToProcess = tempArr.filter(item => 
+      listeners.update_msg_status && 
+      Array.isArray(listeners.update_msg_status[item.conv_id]) &&
+      listeners.update_msg_status[item.conv_id].length > 0
+    );
+    
+    // 清空原队列
+    messageQueue.update_msg_status = [];
+    
+    // 处理有监听器的消息
+    messagesToProcess.forEach(item => {
+      if (listeners.update_msg_status && Array.isArray(listeners.update_msg_status[item.conv_id])) {
+        listeners.update_msg_status[item.conv_id].forEach((listener: any) => {
+          listener.callback(item.tmp_id, item.msgid);
         });
-        tempArr.splice(i, 1);
-        i--;
       }
-    }
+    });
   }
   /**
    * 连接失败
